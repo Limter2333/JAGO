@@ -3,10 +3,12 @@ package org.example.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.ChatRequest;
 import org.example.dto.ChatResponse;
+import org.example.service.QwenService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -23,6 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class QwenController {
 
     private final ChatClient chatClient;
+
+    @Autowired
+    private QwenService qwenService;
 
     public QwenController(ChatClient.Builder chatClient) {
         this.chatClient = chatClient.build();
@@ -116,5 +121,20 @@ public class QwenController {
         httpLogger.info("如果看到这条，说明 info 级别能写入");
 
         return "日志已打印，请检查 http-request.log";
+    }
+
+    @PostMapping("/chat")
+    public ChatResponse chat(@RequestBody ChatRequest request) {
+        return qwenService.chat(request);
+    }
+
+    @PostMapping("/chat/skills")
+    public ChatResponse chatWithSkills(@RequestBody ChatRequest request) {
+        return qwenService.chatWithSkills(request);
+    }
+
+    @PostMapping(value = "/chat/skills/stream", produces = "text/event-stream")
+    public Flux<ChatResponse> streamChatWithSkills(@RequestBody ChatRequest request) {
+        return qwenService.streamChatWithSkills(request);
     }
 }

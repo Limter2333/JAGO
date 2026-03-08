@@ -1,8 +1,12 @@
 package org.example.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatRequest {
     // 用户输入的消息
     private String message;
@@ -12,10 +16,4 @@ public class ChatRequest {
 
     // 可选：系统提示词（覆盖默认）
     private String systemPrompt;
-
-    public ChatRequest(String message, String conversationId, String systemPrompt) {
-        this.message = message;
-        this.conversationId = conversationId;
-        this.systemPrompt = systemPrompt;
-    }
 }
