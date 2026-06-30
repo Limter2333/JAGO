@@ -1,0 +1,4 @@
+Money Tree enterprise handbook summary.
+Employees should document incidents within 24 hours.
+Knowledge base answers must include source references.
+Ticket workflow follows Open, In Progress, Resolved states.

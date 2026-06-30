@@ -1,0 +1,4 @@
+Security policy for internal systems.
+Never expose API keys in repository files.
+All service logs must include trace identifiers.
+Access to production data requires approval.
