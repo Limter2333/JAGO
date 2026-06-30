@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+money-tree:
+  runtime:
+    profile: local
+    mock-llm: true

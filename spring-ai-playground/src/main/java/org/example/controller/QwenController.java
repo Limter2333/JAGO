@@ -3,21 +3,18 @@ package org.example.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.ChatRequest;
 import org.example.dto.ChatResponse;
+import org.example.service.ConversationMemoryService;
 import org.example.service.QwenService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RestController
@@ -26,15 +23,19 @@ public class QwenController {
 
     private final ChatClient chatClient;
 
-    @Autowired
-    private QwenService qwenService;
+    private final QwenService qwenService;
 
-    public QwenController(ChatClient.Builder chatClient) {
+    private final ConversationMemoryService conversationMemoryService;
+
+    public QwenController(
+            ChatClient.Builder chatClient,
+            QwenService qwenService,
+            ConversationMemoryService conversationMemoryService
+    ) {
         this.chatClient = chatClient.build();
+        this.qwenService = qwenService;
+        this.conversationMemoryService = conversationMemoryService;
     }
-
-    // 简单的内存存储： conversationId -> 消息列表
-    private final Map<String, List<Message>> conversationStore = new ConcurrentHashMap<>();
 
     @GetMapping(value = "/chat")
     public String chat(@RequestParam(value =  "input") String input) {
@@ -52,34 +53,28 @@ public class QwenController {
     @PostMapping("/sync")
     public ChatResponse chatSync(@RequestBody ChatRequest request) {
         // 添加有效的日志记录
-        log.debug("Received message: {}", request.getMessage());
+        log.debug("Received message. conversationId={}, userId={}", request.getConversationId(), request.getUserId());
 
-
-        String conversationId = request.getConversationId() != null ?
-                request.getConversationId() : UUID.randomUUID().toString();
-
-        // 获取或创建对话历史
-        List<Message> history = conversationStore.computeIfAbsent(conversationId, k -> new ArrayList<>());
+        String conversationId = conversationMemoryService.resolveConversationId(request.getConversationId());
+        request.setConversationId(conversationId);
 
         // 添加用户消息
-        history.add(new UserMessage(request.getMessage()));
+        conversationMemoryService.appendMessage(conversationId, new UserMessage(request.getMessage()));
 
-        // 调用模型（携带历史上下文）
-        String content = chatClient.prompt()
-                .messages(history)  // 传入完整历史
-                .call()
-                .content();
+        List<Message> history = conversationMemoryService.getHistorySnapshot(conversationId);
+        String content = qwenService.chatWithMemory(request, history);
 
         // 添加助手回复到历史
-        history.add(new AssistantMessage(content));
+        conversationMemoryService.appendMessage(conversationId, new AssistantMessage(content));
 
-        // 可选：限制历史长度，防止 Token 超限
-        if (history.size() > 20) {
-            history = history.subList(history.size() - 20, history.size());
-            conversationStore.put(conversationId, history);
-        }
-
-        return new ChatResponse(content, conversationId, "kimi-k2-thinking");
+        return ChatResponse.builder()
+            .content(content)
+            .conversationId(conversationId)
+            .model("kimi-k2-thinking")
+            .timestamp(System.currentTimeMillis())
+            .success(true)
+            .traceId(UUID.randomUUID().toString())
+            .build();
     }
 
     /**
@@ -89,8 +84,6 @@ public class QwenController {
     public Flux<String> chatStream(
             @RequestParam String message,
             @RequestParam(required = false) String conversationId) {
-
-        String convId = conversationId != null ? conversationId : UUID.randomUUID().toString();
 
         return chatClient.prompt()
                 .user(message)
@@ -105,7 +98,7 @@ public class QwenController {
      */
     @DeleteMapping("/memory/{conversationId}")
     public String clearMemory(@PathVariable String conversationId) {
-        conversationStore.remove(conversationId);
+        conversationMemoryService.clearMemory(conversationId);
         return "Conversation memory cleared: " + conversationId;
     }
 

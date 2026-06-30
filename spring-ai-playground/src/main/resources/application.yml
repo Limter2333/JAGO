@@ -20,7 +20,7 @@ spring:
   ai:
     dashscope:
       # 从环境变量读取 API Key，或在这里硬编码(不推荐)
-      api-key: sk-16dffe5e8e794a19b7ea13d99e9950af
+      api-key: ${QWEN_API_KEY:}
       chat:
         options:
           model: kimi-k2-thinking         # 模型: qwen-max, qwen-plus, qwen-turbo 等
@@ -28,3 +28,7 @@ spring:
           max-tokens: 2000             # 最大输出token数
           top-p: 0.9                   # 核采样
           enable-search: false         # 是否启用联网搜索
+
+money-tree:
+  memory:
+    max-history: 20
