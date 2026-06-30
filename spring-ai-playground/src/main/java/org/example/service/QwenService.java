@@ -6,6 +6,7 @@ import org.example.dto.ChatRequest;
 import org.example.dto.ChatResponse;
 import org.example.skill.CalculatorSkill;
 import org.example.skill.DateTimeSkill;
+import org.example.skill.EnterpriseSearchSkill;
 import org.example.skill.WeatherSkill;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
@@ -24,17 +25,20 @@ public class QwenService implements CoreChatContract {
         private final WeatherSkill weatherSkill;
         private final CalculatorSkill calculatorSkill;
         private final DateTimeSkill dateTimeSkill;
+        private final EnterpriseSearchSkill enterpriseSearchSkill;
 
         public QwenService(
                         ChatClient chatClient,
                         WeatherSkill weatherSkill,
                         CalculatorSkill calculatorSkill,
-                        DateTimeSkill dateTimeSkill
+                        DateTimeSkill dateTimeSkill,
+                        EnterpriseSearchSkill enterpriseSearchSkill
         ) {
                 this.chatClient = chatClient;
                 this.weatherSkill = weatherSkill;
                 this.calculatorSkill = calculatorSkill;
                 this.dateTimeSkill = dateTimeSkill;
+                this.enterpriseSearchSkill = enterpriseSearchSkill;
         }
 
     /**
@@ -63,7 +67,7 @@ public class QwenService implements CoreChatContract {
     public ChatResponse chatWithSkills(ChatRequest request) {
         String reply = chatClient.prompt()
                 .user(request.getMessage())
-                .tools(weatherSkill, calculatorSkill, dateTimeSkill)
+                .tools(weatherSkill, calculatorSkill, dateTimeSkill, enterpriseSearchSkill)
                 .call()
                 .content();
 
@@ -91,7 +95,7 @@ public class QwenService implements CoreChatContract {
                         return spec.call().content();
                 }
 
-                return spec.tools(weatherSkill, calculatorSkill, dateTimeSkill)
+                return spec.tools(weatherSkill, calculatorSkill, dateTimeSkill, enterpriseSearchSkill)
                                 .call()
                                 .content();
         }
@@ -102,7 +106,7 @@ public class QwenService implements CoreChatContract {
     public Flux<ChatResponse> streamChatWithSkills(ChatRequest request) {
         return chatClient.prompt()
                 .user(request.getMessage())
-                .tools(weatherSkill, calculatorSkill, dateTimeSkill)
+                .tools(weatherSkill, calculatorSkill, dateTimeSkill, enterpriseSearchSkill)
                 .stream()
                 .content()
                 .map(content -> ChatResponse.builder()
@@ -120,5 +124,16 @@ public class QwenService implements CoreChatContract {
          */
         public String callWeatherTool(String city) {
                 return weatherSkill.queryWeather(city);
+        }
+
+        /**
+         * Minimal explicit route for enterprise search tool execution with safe fallback.
+         */
+        public String callEnterpriseSearchTool(String topic) {
+                try {
+                        return enterpriseSearchSkill.searchInternalKnowledge(topic);
+                } catch (RuntimeException ex) {
+                        return "主题:未知;部门:未知;文档:未知;状态:服务不可用";
+                }
         }
 }
