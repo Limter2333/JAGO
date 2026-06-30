@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.skill.CalculatorSkill;
 import org.example.skill.DateTimeSkill;
 import org.example.skill.EnterpriseSearchSkill;
+import org.example.skill.TicketStatusSkill;
 import org.example.skill.WeatherSkill;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,8 @@ class QwenServiceWeatherToolRouteTest {
             new WeatherSkill(),
             new CalculatorSkill(),
             new DateTimeSkill(),
-            new EnterpriseSearchSkill()
+            new EnterpriseSearchSkill(),
+            new TicketStatusSkill()
         );
 
         String result = service.callWeatherTool("上海");
@@ -33,7 +35,8 @@ class QwenServiceWeatherToolRouteTest {
             new WeatherSkill(),
             new CalculatorSkill(),
             new DateTimeSkill(),
-            new EnterpriseSearchSkill()
+            new EnterpriseSearchSkill(),
+            new TicketStatusSkill()
         );
 
         String result = service.callWeatherTool(" ");

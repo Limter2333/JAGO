@@ -9,39 +9,39 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class QwenServiceEnterpriseSearchToolRouteTest {
+class QwenServiceTicketStatusToolRouteTest {
 
     @Test
-    void enterpriseSearchRouteShouldReturnStructuredResult() {
+    void ticketStatusRouteShouldReturnStructuredResult() {
         QwenService service = new QwenService(
                 null,
                 new WeatherSkill(),
                 new CalculatorSkill(),
                 new DateTimeSkill(),
-            new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+                new EnterpriseSearchSkill(),
+                new TicketStatusSkill()
         );
 
-        String result = service.callEnterpriseSearchTool("报销流程");
+        String result = service.callTicketStatusTool("INC-1001");
 
-        assertTrue(result.contains("主题:报销流程"));
-        assertTrue(result.contains("文档:"));
+        assertTrue(result.contains("工单:INC-1001"));
+        assertTrue(result.contains("归一化状态:"));
     }
 
     @Test
-    void enterpriseSearchRouteShouldReturnSafeFallbackOnInvalidInput() {
+    void ticketStatusRouteShouldReturnSafeFallbackOnInvalidInput() {
         QwenService service = new QwenService(
                 null,
                 new WeatherSkill(),
                 new CalculatorSkill(),
                 new DateTimeSkill(),
-            new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+                new EnterpriseSearchSkill(),
+                new TicketStatusSkill()
         );
 
-        String result = service.callEnterpriseSearchTool(" ");
+        String result = service.callTicketStatusTool(" ");
 
-        assertTrue(result.contains("主题:未知"));
-        assertTrue(result.contains("状态:未找到"));
+        assertTrue(result.contains("工单:未知工单"));
+        assertTrue(result.contains("归一化状态:未找到"));
     }
 }
