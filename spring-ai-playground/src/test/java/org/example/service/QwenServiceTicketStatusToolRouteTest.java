@@ -19,7 +19,8 @@ class QwenServiceTicketStatusToolRouteTest {
                 new CalculatorSkill(),
                 new DateTimeSkill(),
                 new EnterpriseSearchSkill(),
-                new TicketStatusSkill()
+                new TicketStatusSkill(),
+                null
         );
 
         String result = service.callTicketStatusTool("INC-1001");
@@ -36,7 +37,8 @@ class QwenServiceTicketStatusToolRouteTest {
                 new CalculatorSkill(),
                 new DateTimeSkill(),
                 new EnterpriseSearchSkill(),
-                new TicketStatusSkill()
+                new TicketStatusSkill(),
+                null
         );
 
         String result = service.callTicketStatusTool(" ");

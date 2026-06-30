@@ -19,7 +19,8 @@ class QwenServiceEnterpriseSearchToolRouteTest {
                 new CalculatorSkill(),
                 new DateTimeSkill(),
             new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+                new TicketStatusSkill(),
+                null
         );
 
         String result = service.callEnterpriseSearchTool("报销流程");
@@ -36,7 +37,8 @@ class QwenServiceEnterpriseSearchToolRouteTest {
                 new CalculatorSkill(),
                 new DateTimeSkill(),
             new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+                new TicketStatusSkill(),
+                null
         );
 
         String result = service.callEnterpriseSearchTool(" ");

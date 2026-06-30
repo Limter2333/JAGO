@@ -19,7 +19,8 @@ class QwenServiceWeatherToolRouteTest {
             new CalculatorSkill(),
             new DateTimeSkill(),
             new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+            new TicketStatusSkill(),
+            null
         );
 
         String result = service.callWeatherTool("上海");
@@ -36,7 +37,8 @@ class QwenServiceWeatherToolRouteTest {
             new CalculatorSkill(),
             new DateTimeSkill(),
             new EnterpriseSearchSkill(),
-            new TicketStatusSkill()
+            new TicketStatusSkill(),
+            null
         );
 
         String result = service.callWeatherTool(" ");
