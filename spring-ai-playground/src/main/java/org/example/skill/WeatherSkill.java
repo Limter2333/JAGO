@@ -11,13 +11,38 @@ public class WeatherSkill {
     public String queryWeather(
             @ToolParam(description = "城市名称，如：北京、上海") String city
     ) {
-        // 模拟天气数据，实际项目中可以调用天气 API
-        return switch (city) {
-            case "北京" -> "北京今天晴朗，温度 25°C，空气质量优";
-            case "上海" -> "上海今天多云，温度 28°C，空气质量良好";
-            case "广州" -> "广州今天有雨，温度 30°C，湿度较大";
-            case "深圳" -> "深圳今天晴朗，温度 32°C，适宜户外活动";
-            default -> "抱歉，暂时无法查询到 " + city + " 的天气信息";
-        };
+        try {
+            String normalizedCity = normalizeCity(city);
+            return switch (normalizedCity) {
+                case "北京" -> formatWeather(normalizedCity, "晴朗", "25", "空气质量优");
+                case "上海" -> formatWeather(normalizedCity, "多云", "28", "空气质量良好");
+                case "广州" -> formatWeather(normalizedCity, "有雨", "30", "湿度较大");
+                case "深圳" -> formatWeather(normalizedCity, "晴朗", "32", "适宜户外活动");
+                default -> safeFallback(normalizedCity);
+            };
+        } catch (IllegalArgumentException ex) {
+            return safeFallback("未知城市");
+        } catch (RuntimeException ex) {
+            return "天气服务暂时不可用，请稍后重试。";
+        }
+    }
+
+    private String normalizeCity(String city) {
+        if (city == null || city.isBlank()) {
+            throw new IllegalArgumentException("city must not be blank");
+        }
+        String normalized = city.trim();
+        if (normalized.length() > 20) {
+            throw new IllegalArgumentException("city is too long");
+        }
+        return normalized;
+    }
+
+    private String formatWeather(String city, String weather, String temperature, String detail) {
+        return String.format("城市:%s;天气:%s;温度:%s°C;提示:%s", city, weather, temperature, detail);
+    }
+
+    private String safeFallback(String city) {
+        return String.format("城市:%s;天气:未知;温度:未知;提示:暂无可用天气数据", city);
     }
 }

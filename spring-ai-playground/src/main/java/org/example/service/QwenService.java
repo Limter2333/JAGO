@@ -114,4 +114,11 @@ public class QwenService implements CoreChatContract {
                         .traceId(UUID.randomUUID().toString())
                         .build());
     }
+
+        /**
+         * Minimal explicit route for weather tool execution with arg validation.
+         */
+        public String callWeatherTool(String city) {
+                return weatherSkill.queryWeather(city);
+        }
 }
