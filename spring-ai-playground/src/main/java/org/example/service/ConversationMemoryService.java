@@ -25,8 +25,9 @@ public class ConversationMemoryService {
     }
 
     public List<org.springframework.ai.chat.messages.Message> getHistorySnapshot(String conversationId) {
+        String resolvedConversationId = resolveConversationId(conversationId);
         List<org.springframework.ai.chat.messages.Message> messages = conversationStore.computeIfAbsent(
-                conversationId,
+                resolvedConversationId,
                 key -> new ArrayList<>()
         );
         synchronized (messages) {
@@ -35,8 +36,9 @@ public class ConversationMemoryService {
     }
 
     public void appendMessage(String conversationId, org.springframework.ai.chat.messages.Message message) {
+        String resolvedConversationId = resolveConversationId(conversationId);
         List<org.springframework.ai.chat.messages.Message> messages = conversationStore.computeIfAbsent(
-                conversationId,
+                resolvedConversationId,
                 key -> new ArrayList<>()
         );
 
@@ -47,7 +49,35 @@ public class ConversationMemoryService {
     }
 
     public void clearMemory(String conversationId) {
+        if (conversationId == null || conversationId.isBlank()) {
+            return;
+        }
         conversationStore.remove(conversationId);
+    }
+
+    public int messageCount(String conversationId) {
+        if (conversationId == null || conversationId.isBlank()) {
+            return 0;
+        }
+        List<org.springframework.ai.chat.messages.Message> messages = conversationStore.get(conversationId);
+        if (messages == null) {
+            return 0;
+        }
+        synchronized (messages) {
+            return messages.size();
+        }
+    }
+
+    public int getMaxHistory() {
+        return maxHistory;
+    }
+
+    public void updateMaxHistory(int maxHistory) {
+        if (maxHistory <= 0) {
+            throw new IllegalArgumentException("maxHistory must be greater than 0");
+        }
+        this.maxHistory = maxHistory;
+        conversationStore.values().forEach(this::trimIfNeeded);
     }
 
     private void trimIfNeeded(List<org.springframework.ai.chat.messages.Message> messages) {

@@ -102,6 +102,30 @@ public class QwenController {
         return "Conversation memory cleared: " + conversationId;
     }
 
+    /**
+     * 查看指定会话当前保留的消息数量与 retention 设置。
+     */
+    @GetMapping("/memory/{conversationId}/stats")
+    public java.util.Map<String, Object> memoryStats(@PathVariable String conversationId) {
+        return java.util.Map.of(
+                "conversationId", conversationId,
+                "messageCount", conversationMemoryService.messageCount(conversationId),
+                "maxHistory", conversationMemoryService.getMaxHistory()
+        );
+    }
+
+    /**
+     * 动态更新会话记忆保留条数。
+     */
+    @PutMapping("/memory/policy/max-history/{maxHistory}")
+    public java.util.Map<String, Object> updateMemoryPolicy(@PathVariable int maxHistory) {
+        conversationMemoryService.updateMaxHistory(maxHistory);
+        return java.util.Map.of(
+                "maxHistory", conversationMemoryService.getMaxHistory(),
+                "status", "updated"
+        );
+    }
+
     @GetMapping("/test-log")
     public String testLog() {
         // 使用与 xml 中配置的完全相同的 logger 名
